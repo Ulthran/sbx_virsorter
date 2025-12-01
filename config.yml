@@ -1,2 +1,2 @@
 sbx_virsorter:
-  example_rule_options: /path/to/example_rule_thingy
+  virsorter_db: /path/to/virsorter_db

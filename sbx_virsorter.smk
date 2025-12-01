@@ -1,8 +1,8 @@
 try:
-    SBX_TEMPLATE_VERSION = get_ext_version("sbx_virsorter")
+    SBX_VIRSORTER_VERSION = get_ext_version("sbx_virsorter")
 except NameError:
     # For backwards compatibility with older versions of Sunbeam
-    SBX_TEMPLATE_VERSION = "0.0.0"
+    SBX_VIRSORTER_VERSION = "0.0.0"
 
 try:
     logger = get_extension_logger("sbx_virsorter")
@@ -13,53 +13,32 @@ except NameError:
     logger = logging.getLogger("sunbeam.pipeline.extensions.sbx_virsorter")
 
 
-logger.info("Doing some extension specific setup...")
-logger.info(f"Using sbx_virsorter version {SBX_TEMPLATE_VERSION}.")
-logger.error("Don't worry, this isn't a real error.")
-
-
 localrules:
-    all_template,
+    all_virsorter,
 
 
-rule all_template:
+rule all_virsorter:
     input:
-        QC_FP / "mush" / "big_file.txt",
+        expand(
+            VIRUS_FP / "virsorter2" / "{sample}" / "final-viral-combined.fa",
+            sample=Samples,
+        ),
 
 
-rule example_rule:
-    """Takes in cleaned .fastq.gz and mushes them all together into a file"""
+rule run_virsorter2:
     input:
-        expand(QC_FP / "cleaned" / "{sample}_{rp}.fastq.gz", sample=Samples, rp=Pairs),
+        ASSEMBLY_FP / "contigs" / "{sample}-contigs.fa",
     output:
-        QC_FP / "mush" / "big_file1.txt",
+        VIRUS_FP / "virsorter2" / "{sample}" / "final-viral-combined.fa",
     log:
-        LOG_FP / "example_rule.log",
+        LOG_FP / "run_virsorter2.log",
     benchmark:
-        BENCHMARK_FP / "example_rule.tsv"
+        BENCHMARK_FP / "run_virsorter2.tsv"
     params:
-        opts=Cfg["sbx_virsorter"]["example_rule_options"],
+        db=Cfg["sbx_virsorter"]["virsorter_db"],
     conda:
         "envs/sbx_virsorter_env.yml"
     container:
-        f"docker://sunbeamlabs/sbx_virsorter:{SBX_TEMPLATE_VERSION}"
+        f"docker://sunbeamlabs/sbx_virsorter:{SBX_VIRSORTER_VERSION}"
     shell:
-        "(cat {params.opts} {input} > {output}) > {log} 2>&1"
-
-
-rule example_with_script:
-    """Take in big_file1 and then ignore it and write the results of `samtools --help` to the output using a python script"""
-    input:
-        QC_FP / "mush" / "big_file1.txt",
-    output:
-        QC_FP / "mush" / "big_file.txt",
-    log:
-        LOG_FP / "example_with_script.log",
-    benchmark:
-        BENCHMARK_FP / "example_with_script.tsv"
-    conda:
-        "envs/sbx_virsorter_env.yml"
-    container:
-        f"docker://sunbeamlabs/sbx_virsorter:{SBX_TEMPLATE_VERSION}"
-    script:
-        "scripts/example_with_script.py"
+        "(virsorter run -w $(dirname {output}) -i {input} --db-dir {params.db} --min-length 1500 -j 4 all) > {log} 2>&1"
