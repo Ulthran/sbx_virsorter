@@ -31,9 +31,9 @@ rule run_virsorter2:
     output:
         VIRUS_FP / "virsorter2" / "{sample}" / "final-viral-combined.fa",
     log:
-        LOG_FP / "run_virsorter2.log",
+        LOG_FP / "run_virsorter2_{sample}.log",
     benchmark:
-        BENCHMARK_FP / "run_virsorter2.tsv"
+        BENCHMARK_FP / "run_virsorter2_{sample}.tsv"
     params:
         db=Cfg["sbx_virsorter"]["virsorter_db"],
     conda:
