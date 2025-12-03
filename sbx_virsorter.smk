@@ -41,4 +41,7 @@ rule run_virsorter2:
     container:
         f"docker://sunbeamlabs/sbx_virsorter:{SBX_VIRSORTER_VERSION}"
     shell:
-        "(virsorter run -w $(dirname {output}) -i {input} --db-dir {params.db} --min-length 1500 -j 4 all) > {log} 2>&1"
+        """
+        (virsorter config --init-source --db-dir {params.db}) > {log} 2>&1
+        (virsorter run -w $(dirname {output}) -i {input} --min-length 1500 -j 4 all) >> {log} 2>&1
+        """

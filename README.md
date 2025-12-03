@@ -20,7 +20,7 @@ VirSorter2 requires a local copy of a database to run. Access instructions for d
 
 ## Config
 
-  - virsorter_db: Path to virsorter database
+  - virsorter_db: Path to virsorter database (e.g. /path/to/virsorter_db/ver2/)
     
 ## Docs
 
